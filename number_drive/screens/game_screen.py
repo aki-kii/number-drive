@@ -35,6 +35,11 @@ class GameScreen:
         self.feedback = None  # None: なし, True: 正解, False: 不正解
         self.feedback_time = None
         
+        # モーダル関連
+        self.show_modal = False
+        self.modal_buttons = []
+        self.selected_button_index = 0  # 選択中のボタンインデックス
+        
         # 装飾用の車の画像を読み込む（1台だけ）
         self.car = None
         try:
@@ -109,6 +114,7 @@ class GameScreen:
         self.current_input = ""
         self.feedback = None
         self.feedback_time = None
+        self.show_modal = False
         
         # 問題を生成
         self.generate_questions()
@@ -158,7 +164,51 @@ class GameScreen:
         Args:
             event: Pygameのイベント
         """
+        # モーダル表示中の場合
+        if self.show_modal:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    # モーダル表示中にEscキーを押すとモーダルを閉じる
+                    self.show_modal = False
+                    return
+                elif event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                    # 左右キーでボタン選択を切り替え
+                    self.selected_button_index = 1 - self.selected_button_index  # 0と1を切り替え
+                    return
+                elif event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
+                    # 決定キーで選択中のボタンを実行
+                    selected_button = self.modal_buttons[self.selected_button_index]
+                    if selected_button["action"] == "quit":
+                        # タイトル画面に戻る
+                        self.game.change_state(GameState.TITLE)
+                    elif selected_button["action"] == "close":
+                        # モーダルを閉じる
+                        self.show_modal = False
+                    return
+            
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                # モーダル内のボタンクリック処理
+                for i, button in enumerate(self.modal_buttons):
+                    if button["rect"].collidepoint(event.pos):
+                        self.selected_button_index = i  # マウスでクリックしたボタンを選択状態に
+                        if button["action"] == "quit":
+                            # タイトル画面に戻る
+                            self.game.change_state(GameState.TITLE)
+                        elif button["action"] == "close":
+                            # モーダルを閉じる
+                            self.show_modal = False
+                        return
+            return  # モーダル表示中は他の入力を無視
+        
+        # 通常のゲームプレイ中
         if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                # Escキーでモーダルを表示
+                self.show_modal = True
+                self._setup_modal_buttons()
+                self.selected_button_index = 1  # デフォルトで「Cancel」を選択
+                return
+                
             if self.feedback is not None:
                 # フィードバック表示中は何もしない
                 return
@@ -174,6 +224,37 @@ class GameScreen:
             elif event.unicode.isdigit() or (event.unicode == '-' and not self.current_input):
                 # 数字または先頭のマイナス記号を入力
                 self.current_input += event.unicode
+    
+    def _setup_modal_buttons(self):
+        """モーダルのボタンを設定する"""
+        button_width = 250  # さらに幅を広げる
+        button_height = 60  # 高さはそのまま
+        button_spacing = 60  # ボタン間隔をさらに広げる
+        
+        # ボタンの位置を計算（モーダルの中央に配置）
+        modal_center_x = SCREEN_WIDTH // 2
+        modal_center_y = SCREEN_HEIGHT // 2
+        
+        # 中断ボタン
+        quit_button_rect = pygame.Rect(
+            modal_center_x - button_width - button_spacing // 2,
+            modal_center_y + 40,  # 少し下に移動
+            button_width,
+            button_height
+        )
+        
+        # 閉じるボタン
+        close_button_rect = pygame.Rect(
+            modal_center_x + button_spacing // 2,
+            modal_center_y + 40,  # 少し下に移動
+            button_width,
+            button_height
+        )
+        
+        self.modal_buttons = [
+            {"rect": quit_button_rect, "text": "Quit Game", "action": "quit"},
+            {"rect": close_button_rect, "text": "Cancel", "action": "close"}
+        ]
     
     def check_answer(self):
         """回答をチェックする"""
@@ -337,6 +418,73 @@ class GameScreen:
         
         # 操作ヘルプ（スタート画面と同じスタイル）
         help_font = get_font(SMALL_FONT_SIZE - 4)
-        help_text = help_font.render("Number Keys: Input  Backspace: Delete  Enter: Confirm", True, FOOTER_GRAY)
+        help_text = help_font.render("Number Keys: Input  Backspace: Delete  Enter: Confirm  Esc: Pause", True, FOOTER_GRAY)
         help_rect = help_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 30))
+        screen.blit(help_text, help_rect)
+        
+        # モーダル表示
+        if self.show_modal:
+            self._render_modal(screen)
+    
+    def _render_modal(self, screen):
+        """モーダルを描画する"""
+        # 半透明の背景オーバーレイ
+        overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 180))  # 黒色の半透明オーバーレイ
+        screen.blit(overlay, (0, 0))
+        
+        # モーダルウィンドウ
+        modal_width = 650  # さらに幅を広げる
+        modal_height = 300  # 高さはそのまま
+        modal_x = (SCREEN_WIDTH - modal_width) // 2
+        modal_y = (SCREEN_HEIGHT - modal_height) // 2
+        
+        # モーダルの背景
+        modal_rect = pygame.Rect(modal_x, modal_y, modal_width, modal_height)
+        pygame.draw.rect(screen, BACKGROUND_COLOR, modal_rect, border_radius=15)
+        pygame.draw.rect(screen, ACCENT_COLOR, modal_rect, width=2, border_radius=15)
+        
+        # モーダルのタイトル
+        title_font = get_font(LARGE_FONT_SIZE)
+        title_text = title_font.render("Game Paused", True, MAIN_COLOR_PINK)
+        title_rect = title_text.get_rect(center=(SCREEN_WIDTH // 2, modal_y + 50))
+        screen.blit(title_text, title_rect)
+        
+        # モーダルのメッセージ
+        message_font = get_font(MEDIUM_FONT_SIZE)
+        message_text = message_font.render("Quit the game?", True, WHITE)
+        message_rect = message_text.get_rect(center=(SCREEN_WIDTH // 2, modal_y + 100))
+        screen.blit(message_text, message_rect)
+        
+        # ボタンの描画
+        for i, button in enumerate(self.modal_buttons):
+            # 選択中のボタンかどうかでスタイルを変える
+            is_selected = (i == self.selected_button_index)
+            
+            # ボタンの背景色（選択中は明るく）
+            bg_color = BUTTON_INACTIVE
+            if is_selected:
+                bg_color = (50, 50, 50)  # 選択中は少し明るい色
+            
+            # ボタンの背景
+            pygame.draw.rect(screen, bg_color, button["rect"], border_radius=10)
+            
+            # ボタンの枠線（選択中は強調）
+            border_color = BUTTON_BORDER
+            border_width = 2
+            if is_selected:
+                border_color = ACCENT_COLOR
+                border_width = 3
+            pygame.draw.rect(screen, border_color, button["rect"], width=border_width, border_radius=10)
+            
+            # ボタンのテキスト（フォントサイズを少し小さく）
+            button_font = get_font(MEDIUM_FONT_SIZE - 2)  # フォントサイズを少し小さく
+            button_text = button_font.render(button["text"], True, WHITE if not is_selected else ACCENT_COLOR)
+            button_text_rect = button_text.get_rect(center=button["rect"].center)
+            screen.blit(button_text, button_text_rect)
+        
+        # 操作ヘルプ（モーダル下部に配置）
+        help_font = get_font(SMALL_FONT_SIZE - 4)
+        help_text = help_font.render("← → : Select   Enter: Confirm   Esc: Close", True, FOOTER_GRAY)
+        help_rect = help_text.get_rect(center=(SCREEN_WIDTH // 2, modal_y + modal_height - 30))
         screen.blit(help_text, help_rect)
