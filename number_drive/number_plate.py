@@ -117,7 +117,7 @@ class NumberPlate:
         """
         # 画像のような比率に調整（横長のプレート）
         plate_width = width
-        plate_height = int(width * 0.22)  # 画像の比率に合わせて高さを調整
+        plate_height = int(width * 0.5)  # 縦横比率を1:2に調整
         
         # 中央に配置するための調整
         plate_y = y + (height - plate_height) // 2
@@ -128,7 +128,7 @@ class NumberPlate:
         pygame.draw.rect(surface, BLACK, plate_rect, width=3, border_radius=10)
         
         # 数字を描画
-        font_size = int(plate_height * 0.7)  # プレートの高さに対する比率
+        font_size = int(plate_height * 0.4)  # プレートの高さに対する比率をさらに小さく
         font = pygame.font.SysFont("Arial", font_size)
         
         # 前半の数字
@@ -136,11 +136,10 @@ class NumberPlate:
         front_rect = front_text.get_rect(center=(x + plate_width * 0.25, plate_y + plate_height // 2))
         surface.blit(front_text, front_rect)
         
-        # 区切り線
-        line_x = x + plate_width * 0.5
-        pygame.draw.line(surface, self.text_color, 
-                         (line_x, plate_y + plate_height * 0.2),
-                         (line_x, plate_y + plate_height * 0.8), 3)
+        # ハイフンを描画
+        hyphen_text = font.render("-", True, self.text_color)
+        hyphen_rect = hyphen_text.get_rect(center=(x + plate_width * 0.5, plate_y + plate_height // 2))
+        surface.blit(hyphen_text, hyphen_rect)
         
         # 後半の数字
         back_text = font.render(f"{self.back_number:02d}", True, self.text_color)

@@ -350,10 +350,9 @@ class GameScreen:
         screen.blit(question_text, question_rect)
         
         # ナンバープレート表示
-        plate_width = SCREEN_WIDTH * 0.6
-        plate_height = plate_width * 0.2
+        plate_width = SCREEN_WIDTH * 0.4  # 幅をさらに小さく
         plate_x = (SCREEN_WIDTH - plate_width) // 2
-        plate_y = SCREEN_HEIGHT // 3
+        plate_y = SCREEN_HEIGHT // 3 - 20  # 少し上に移動
         
         # 演算子の種類表示（ナンバープレートの直上に配置）- 記号を追加
         current_plate = self.number_plates[self.current_question]
@@ -370,10 +369,12 @@ class GameScreen:
         
         op_font = get_font(MEDIUM_FONT_SIZE)
         op_text = op_font.render(f"{op_name} ({op_symbol})", True, ACCENT_COLOR)
-        op_rect = op_text.get_rect(center=(SCREEN_WIDTH // 2, plate_y - 30))  # プレートの上に配置
+        op_rect = op_text.get_rect(center=(SCREEN_WIDTH // 2, plate_y - 40))  # プレートからさらに離す
         screen.blit(op_text, op_rect)
         
         # ナンバープレートの背景に光彩効果
+        # プレートの高さは number_plate.py で計算されるので、ここでは計算しない
+        plate_height = int(plate_width * 0.5)  # 縦横比1:2の場合の高さ（表示位置調整用）
         glow_surface = pygame.Surface((plate_width + 20, plate_height + 20), pygame.SRCALPHA)
         pygame.draw.rect(glow_surface, (*ACCENT_COLOR[:3], 100), 
                         (0, 0, plate_width + 20, plate_height + 20), border_radius=15)
@@ -384,7 +385,7 @@ class GameScreen:
         # 入力エリア
         input_font = get_font(LARGE_FONT_SIZE)
         input_text = input_font.render(self.current_input or "_", True, MAIN_COLOR_PINK)
-        input_rect = input_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT * 2 // 3 + 10))  # 少し下に移動
+        input_rect = input_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT * 2 // 3 + 50))  # さらに下に移動
         
         # 入力エリアの背景
         input_bg_rect = pygame.Rect(0, 0, max(input_rect.width + 40, 80), input_rect.height + 20)
@@ -397,7 +398,7 @@ class GameScreen:
         # 入力ラベル表示（入力エリアの上に配置、被らないように）
         input_label_font = get_font(SMALL_FONT_SIZE)
         input_label_text = input_label_font.render("Input", True, MAIN_COLOR_PINK)
-        input_label_rect = input_label_text.get_rect(center=(SCREEN_WIDTH // 2, input_bg_rect.top - 15))  # 入力エリアの上端から15px上
+        input_label_rect = input_label_text.get_rect(center=(SCREEN_WIDTH // 2, input_bg_rect.top - 25))  # 入力エリアからさらに離す
         screen.blit(input_label_text, input_label_rect)
         
         # フィードバック表示
