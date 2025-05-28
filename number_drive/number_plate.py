@@ -104,6 +104,20 @@ class NumberPlate:
         else:  # MULTIPLICATION
             return "Multiplication"
     
+    def get_operation_symbol(self) -> str:
+        """
+        演算記号を取得する
+        
+        Returns:
+            演算記号（+, -, ×）
+        """
+        if self.operation_type == OperationType.ADDITION:
+            return "+"
+        elif self.operation_type == OperationType.SUBTRACTION:
+            return "-"
+        else:  # MULTIPLICATION
+            return "×"
+    
     def render(self, surface: pygame.Surface, x: int, y: int, width: int, height: int):
         """
         ナンバープレートを描画する
@@ -117,31 +131,49 @@ class NumberPlate:
         """
         # 画像のような比率に調整（横長のプレート）
         plate_width = width
-        plate_height = int(width * 0.5)  # 縦横比率を1:2に調整
+        plate_height = int(width * 0.5)  # 縦横比を1:2に調整
         
         # 中央に配置するための調整
         plate_y = y + (height - plate_height) // 2
         
-        # プレートの背景を描画
+        # プレートの背景を描画（枠いっぱいに）
         plate_rect = pygame.Rect(x, plate_y, plate_width, plate_height)
         pygame.draw.rect(surface, self.plate_color, plate_rect, border_radius=10)
-        pygame.draw.rect(surface, BLACK, plate_rect, width=3, border_radius=10)
+        
+        # 黒い枠線を追加
+        pygame.draw.rect(surface, BLACK, plate_rect, width=2, border_radius=10)
+        
+        # 演算子名を中央上部に表示
+        op_name_font_size = int(plate_height * 0.25)
+        op_name_font = pygame.font.SysFont("Arial", op_name_font_size)
+        op_name = self.get_operation_name()
+        op_name_text = op_name_font.render(op_name, True, self.text_color)
+        op_name_rect = op_name_text.get_rect(midtop=(x + plate_width // 2, plate_y + 10))
+        surface.blit(op_name_text, op_name_rect)
+        
+        # 演算記号を左端に表示
+        op_symbol_font_size = int(plate_height * 0.3)
+        op_symbol_font = pygame.font.SysFont("Arial", op_symbol_font_size)
+        op_symbol = self.get_operation_symbol()
+        op_symbol_text = op_symbol_font.render(op_symbol, True, self.text_color)
+        op_symbol_rect = op_symbol_text.get_rect(center=(x + 25, plate_y + plate_height // 2 + 10))
+        surface.blit(op_symbol_text, op_symbol_rect)
         
         # 数字を描画
-        font_size = int(plate_height * 0.4)  # プレートの高さに対する比率をさらに小さく
+        font_size = int(plate_height * 0.4)
         font = pygame.font.SysFont("Arial", font_size)
         
         # 前半の数字
         front_text = font.render(f"{self.front_number}", True, self.text_color)
-        front_rect = front_text.get_rect(center=(x + plate_width * 0.25, plate_y + plate_height // 2))
+        front_rect = front_text.get_rect(center=(x + plate_width * 0.4, plate_y + plate_height // 2 + 10))
         surface.blit(front_text, front_rect)
         
         # ハイフンを描画
         hyphen_text = font.render("-", True, self.text_color)
-        hyphen_rect = hyphen_text.get_rect(center=(x + plate_width * 0.5, plate_y + plate_height // 2))
+        hyphen_rect = hyphen_text.get_rect(center=(x + plate_width * 0.55, plate_y + plate_height // 2 + 10))
         surface.blit(hyphen_text, hyphen_rect)
         
         # 後半の数字
         back_text = font.render(f"{self.back_number:02d}", True, self.text_color)
-        back_rect = back_text.get_rect(center=(x + plate_width * 0.75, plate_y + plate_height // 2))
+        back_rect = back_text.get_rect(center=(x + plate_width * 0.7, plate_y + plate_height // 2 + 10))
         surface.blit(back_text, back_rect)

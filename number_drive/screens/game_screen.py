@@ -350,7 +350,7 @@ class GameScreen:
         screen.blit(question_text, question_rect)
         
         # ナンバープレート表示
-        plate_width = SCREEN_WIDTH * 0.4  # 幅をさらに小さく
+        plate_width = SCREEN_WIDTH * 0.45  # 幅を少し大きく
         plate_x = (SCREEN_WIDTH - plate_width) // 2
         plate_y = SCREEN_HEIGHT // 3 - 20  # 少し上に移動
         
@@ -367,18 +367,15 @@ class GameScreen:
         elif current_plate.operation_type == OperationType.MULTIPLICATION:
             op_symbol = "×"
         
-        op_font = get_font(MEDIUM_FONT_SIZE)
-        op_text = op_font.render(f"{op_name} ({op_symbol})", True, ACCENT_COLOR)
-        op_rect = op_text.get_rect(center=(SCREEN_WIDTH // 2, plate_y - 40))  # プレートからさらに離す
-        screen.blit(op_text, op_rect)
+        # 演算子の種類表示は不要（ナンバープレート自体に表示するため）
         
         # ナンバープレートの背景に光彩効果
         # プレートの高さは number_plate.py で計算されるので、ここでは計算しない
-        plate_height = int(plate_width * 0.5)  # 縦横比1:2の場合の高さ（表示位置調整用）
-        glow_surface = pygame.Surface((plate_width + 20, plate_height + 20), pygame.SRCALPHA)
-        pygame.draw.rect(glow_surface, (*ACCENT_COLOR[:3], 100), 
-                        (0, 0, plate_width + 20, plate_height + 20), border_radius=15)
-        screen.blit(glow_surface, (plate_x - 10, plate_y - 10))
+        plate_height = int(plate_width * 0.5)  # 縦横比を1:2に調整
+        glow_surface = pygame.Surface((plate_width + 6, plate_height + 6), pygame.SRCALPHA)
+        pygame.draw.rect(glow_surface, (*ACCENT_COLOR[:3], 60), 
+                        (0, 0, plate_width + 6, plate_height + 6), border_radius=12)
+        screen.blit(glow_surface, (plate_x - 3, plate_y - 3))
         
         current_plate.render(screen, plate_x, plate_y, plate_width, plate_height)
         
