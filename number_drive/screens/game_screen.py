@@ -408,13 +408,26 @@ class GameScreen:
         
         # フィードバック表示
         if self.feedback is not None:
-            feedback_font = get_font(LARGE_FONT_SIZE * 1.5)
-            if self.feedback:
-                feedback_text = feedback_font.render("O", True, (0, 255, 0))  # 英語の「O」に変更
-            else:
-                feedback_text = feedback_font.render("X", True, (255, 0, 0))  # 英語の「X」に変更
+            # 半透明のオーバーレイを表示
+            overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+            overlay.fill((0, 0, 0, 100))  # 黒色の半透明オーバーレイ
+            screen.blit(overlay, (0, 0))
             
-            feedback_rect = feedback_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT * 3 // 4))
+            # 画面の60%サイズの大きなマルバツ
+            feedback_size = int(min(SCREEN_WIDTH, SCREEN_HEIGHT) * 0.6)
+            
+            # ピクセル風フォントを使用
+            feedback_font = get_font(feedback_size // 3)  # ピクセルフォントは大きく見えるので調整
+            
+            if self.feedback:
+                # 正解の場合は緑色の○
+                feedback_text = feedback_font.render("O", True, (0, 255, 0))
+            else:
+                # 不正解の場合は赤色の×
+                feedback_text = feedback_font.render("X", True, (255, 0, 0))
+            
+            # マルバツを画面中央に表示
+            feedback_rect = feedback_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
             screen.blit(feedback_text, feedback_rect)
         
         # 下部の装飾ライン
