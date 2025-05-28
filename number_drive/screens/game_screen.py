@@ -117,24 +117,39 @@ class GameScreen:
         """ゲームモードに応じた問題を生成する"""
         self.number_plates = []
         
-        for _ in range(TOTAL_QUESTIONS):
-            if self.game.game_mode == GameMode.EASY:
-                # イージーモード: 足し算のみ
-                operation = OperationType.ADDITION
-            
-            elif self.game.game_mode == GameMode.NORMAL:
-                # ノーマルモード: 足し算と引き算をランダムに出題（比率 1:1）
-                operation = random.choice([OperationType.ADDITION, OperationType.SUBTRACTION])
-            
-            else:  # HARD
-                # ハードモード: 足し算、引き算、掛け算をランダムに出題（比率 4:4:2）
-                operation = random.choices(
-                    [OperationType.ADDITION, OperationType.SUBTRACTION, OperationType.MULTIPLICATION],
-                    weights=[4, 4, 2],
-                    k=1
-                )[0]
-            
-            self.number_plates.append(NumberPlate(operation))
+        if self.game.game_mode == GameMode.EASY:
+            # イージーモード: 足し算のみ
+            for _ in range(TOTAL_QUESTIONS):
+                self.number_plates.append(NumberPlate(OperationType.ADDITION))
+        
+        elif self.game.game_mode == GameMode.NORMAL:
+            # ノーマルモード: 足し算5問、引き算5問を出題（出題順はランダム）
+            questions = []
+            # 足し算5問を追加
+            for _ in range(5):
+                questions.append(NumberPlate(OperationType.ADDITION))
+            # 引き算5問を追加
+            for _ in range(5):
+                questions.append(NumberPlate(OperationType.SUBTRACTION))
+            # 問題をシャッフル
+            random.shuffle(questions)
+            self.number_plates = questions
+        
+        else:  # HARD
+            # ハードモード: 足し算4問、引き算4問、掛け算2問を出題（出題順はランダム）
+            questions = []
+            # 足し算4問を追加
+            for _ in range(4):
+                questions.append(NumberPlate(OperationType.ADDITION))
+            # 引き算4問を追加
+            for _ in range(4):
+                questions.append(NumberPlate(OperationType.SUBTRACTION))
+            # 掛け算2問を追加
+            for _ in range(2):
+                questions.append(NumberPlate(OperationType.MULTIPLICATION))
+            # 問題をシャッフル
+            random.shuffle(questions)
+            self.number_plates = questions
     
     def handle_event(self, event):
         """
