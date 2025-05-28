@@ -79,6 +79,9 @@ class PrepareScreen:
             if event.key == pygame.K_SPACE or event.key == pygame.K_RETURN:
                 self.waiting_for_start = False
                 self.start_time = time.time()
+            elif event.key == pygame.K_ESCAPE:
+                # Escキーでタイトル画面に戻る
+                self.game.change_state(GameState.TITLE)
     
     def update(self):
         """画面の状態を更新する"""
@@ -133,6 +136,6 @@ class PrepareScreen:
         # 操作方法（画面下部中央に配置）
         if self.waiting_for_start:
             help_font = get_font(SMALL_FONT_SIZE - 4)
-            help_text = help_font.render("Space/Enter: Start", True, FOOTER_GRAY)
+            help_text = help_font.render("Space/Enter: Start   Esc: Back to Title", True, FOOTER_GRAY)
             help_rect = help_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 30))
             screen.blit(help_text, help_rect)
