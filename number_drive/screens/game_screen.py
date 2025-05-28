@@ -369,6 +369,14 @@ class GameScreen:
         
         # 演算子の種類表示は不要（ナンバープレート自体に表示するため）
         
+        # ナンバープレートの上に計算式を表示
+        equation_font = get_font(LARGE_FONT_SIZE)
+        current_plate = self.number_plates[self.current_question]
+        equation_text = current_plate.get_question()
+        equation_text = equation_font.render(equation_text, True, WHITE)
+        equation_rect = equation_text.get_rect(center=(SCREEN_WIDTH // 2, plate_y - 40))
+        screen.blit(equation_text, equation_rect)
+        
         # ナンバープレートの背景に光彩効果
         # プレートの高さは number_plate.py で計算されるので、ここでは計算しない
         plate_height = int(plate_width * 0.5)  # 縦横比を1:2に調整
