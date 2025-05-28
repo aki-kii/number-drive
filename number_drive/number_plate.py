@@ -6,7 +6,7 @@ import pygame
 from enum import Enum, auto
 from typing import Tuple
 
-from number_drive.config import EXCLUDED_NUMBERS, PLATE_YELLOW, PLATE_WHITE, BLACK, GREEN
+from number_drive.config import EXCLUDED_NUMBERS, PLATE_YELLOW, PLATE_WHITE, PLATE_GREEN, BLACK, WHITE
 
 
 class OperationType(Enum):
@@ -31,17 +31,17 @@ class NumberPlate:
         
         # 演算子に応じたプレートの色と文字色を設定
         if operation_type == OperationType.ADDITION:
-            # 軽自動車・自家用：黄色地に黒文字
+            # 足し算：黄色地に黒文字
             self.plate_color = PLATE_YELLOW
             self.text_color = BLACK
         elif operation_type == OperationType.SUBTRACTION:
-            # 普通車・自家用：白地に緑文字
+            # 引き算：白地に黒文字
             self.plate_color = PLATE_WHITE
-            self.text_color = GREEN
-        else:  # MULTIPLICATION
-            # 普通車・事業用：黄色地に黒文字
-            self.plate_color = PLATE_YELLOW
             self.text_color = BLACK
+        else:  # MULTIPLICATION
+            # 掛け算：緑地に白文字
+            self.plate_color = PLATE_GREEN
+            self.text_color = WHITE
     
     def _generate_valid_numbers(self) -> Tuple[int, int]:
         """
@@ -95,14 +95,14 @@ class NumberPlate:
         演算子の名前を取得する
         
         Returns:
-            演算子の名前（例: "足し算"）
+            演算子の名前（例: "Addition"）
         """
         if self.operation_type == OperationType.ADDITION:
-            return "足し算"
+            return "Addition"
         elif self.operation_type == OperationType.SUBTRACTION:
-            return "引き算"
+            return "Subtraction"
         else:  # MULTIPLICATION
-            return "かけ算"
+            return "Multiplication"
     
     def render(self, surface: pygame.Surface, x: int, y: int, width: int, height: int):
         """
@@ -115,25 +115,34 @@ class NumberPlate:
             width: 幅
             height: 高さ
         """
+        # 画像のような比率に調整（横長のプレート）
+        plate_width = width
+        plate_height = int(width * 0.22)  # 画像の比率に合わせて高さを調整
+        
+        # 中央に配置するための調整
+        plate_y = y + (height - plate_height) // 2
+        
         # プレートの背景を描画
-        plate_rect = pygame.Rect(x, y, width, height)
+        plate_rect = pygame.Rect(x, plate_y, plate_width, plate_height)
         pygame.draw.rect(surface, self.plate_color, plate_rect, border_radius=10)
         pygame.draw.rect(surface, BLACK, plate_rect, width=3, border_radius=10)
         
         # 数字を描画
-        font = pygame.font.SysFont("Arial", int(height // 2))
+        font_size = int(plate_height * 0.7)  # プレートの高さに対する比率
+        font = pygame.font.SysFont("Arial", font_size)
         
         # 前半の数字
         front_text = font.render(f"{self.front_number}", True, self.text_color)
-        front_rect = front_text.get_rect(center=(x + width // 4, y + height // 2))
+        front_rect = front_text.get_rect(center=(x + plate_width * 0.25, plate_y + plate_height // 2))
         surface.blit(front_text, front_rect)
         
         # 区切り線
+        line_x = x + plate_width * 0.5
         pygame.draw.line(surface, self.text_color, 
-                         (x + width // 2 - 10, y + height // 4),
-                         (x + width // 2 - 10, y + height * 3 // 4), 3)
+                         (line_x, plate_y + plate_height * 0.2),
+                         (line_x, plate_y + plate_height * 0.8), 3)
         
         # 後半の数字
         back_text = font.render(f"{self.back_number:02d}", True, self.text_color)
-        back_rect = back_text.get_rect(center=(x + width * 3 // 4, y + height // 2))
+        back_rect = back_text.get_rect(center=(x + plate_width * 0.75, plate_y + plate_height // 2))
         surface.blit(back_text, back_rect)

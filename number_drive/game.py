@@ -11,7 +11,7 @@ from number_drive.screens.title_screen import TitleScreen
 from number_drive.screens.game_screen import GameScreen
 from number_drive.screens.result_screen import ResultScreen
 from number_drive.screens.prepare_screen import PrepareScreen
-from number_drive.config import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, BACKGROUND_COLOR
+from number_drive.config import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, BACKGROUND_COLOR, LOGO_PATH
 
 
 class Game:
@@ -21,6 +21,13 @@ class Game:
         """ゲームの初期化"""
         pygame.init()
         pygame.display.set_caption("NumberDrive!")
+        
+        # ウィンドウアイコンの設定（ロゴがあれば）
+        try:
+            icon = pygame.image.load(str(LOGO_PATH))
+            pygame.display.set_icon(icon)
+        except:
+            pass
         
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
